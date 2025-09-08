@@ -1,0 +1,6 @@
+ultralytics
+opencv-python
+onnxruntime
+onnxruntime-gpu
+numpy
+scikit-learn
