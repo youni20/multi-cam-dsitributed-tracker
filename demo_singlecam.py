@@ -6,6 +6,12 @@ from ultralytics import YOLO
 # Choose tracker backend
 tracker_yaml = "bytetrack.yaml"   # or "botsort.yaml"
 
+def get_color(idx: int):
+    """Generate a consistent color for a given track id."""
+    np.random.seed(idx)  # seed with ID for reproducibility
+    color = np.random.randint(0, 255, size=3).tolist()
+    return (int(color[0]), int(color[1]), int(color[2]))
+
 def draw_tracks(img, tracks, label_prefix="ID", names=None):
     for t in tracks:
         x1, y1, x2, y2 = t["bbox"].astype(int)
@@ -16,13 +22,15 @@ def draw_tracks(img, tracks, label_prefix="ID", names=None):
         if names is not None and cls in names:
             cls_name = names[cls]
 
-        cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        color = get_color(tid)
+
+        cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
         cv2.putText(img, f"{label_prefix}:{tid} {cls_name}",
                     (x1, max(0, y1 - 6)),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
 def main():
-    model = YOLO("yolov8s.pt")  # swap to yolov8s.pt for better boxes
+    model = YOLO("yolov8n.pt")  # swap to yolov8s.pt for better boxes
     names = model.names          # {id: 'classname'}
 
     stream = model.track(
@@ -34,7 +42,6 @@ def main():
         persist=True,
         stream=True,
         verbose=False
-        # remove or adjust `classes=[...]` if you want all classes
     )
 
     for result in stream:
