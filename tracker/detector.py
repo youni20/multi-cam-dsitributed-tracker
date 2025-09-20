@@ -1,6 +1,7 @@
 import numpy as np
 from ultralytics import YOLO
 import cv2
+import os 
 
 class  YoloDetector():
     def __init__(self, model_path: str):
@@ -29,7 +30,7 @@ class  YoloDetector():
 
 if __name__ == "__main__":
     # dummy_img = np.zeros((480, 640, 3), dtype=np.uint8)
-    dummy_img = cv2.imread("data\images\car.png")
+    dummy_img = cv2.imread(os.path.join("data", "images", "car.png"))
     dummy_img = cv2.resize(dummy_img, (640, 480))
     detector = YoloDetector("yolov8n.pt")
 
