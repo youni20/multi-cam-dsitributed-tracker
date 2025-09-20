@@ -34,7 +34,7 @@ def main():
     names = model.names          # {id: 'classname'}
 
     stream = model.track(
-        source=0,               # webcam index or video path
+        source=1,               # webcam index or video path
         conf=0.35,
         iou=0.5,
         imgsz=640,
