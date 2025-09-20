@@ -28,8 +28,10 @@ class SimpleTracker:
         union = area_a + area_b - inter
         return (inter / np.maximum(union, 1e-6)).astype(np.float32)
 
-    def update(self, dets: np.ndarray) -> list[dict]:
+    def update(self, dets: np.ndarray, detector=None) -> list[dict]:
         bboxes = dets[:, :4].astype(np.float32) if dets is not None and len(dets) else np.empty((0,4), np.float32)
+        classes = dets[:, 5].astype(int) if dets is not None and len(dets) > 0 else np.empty(0, int)
+        
         active = [t for t in self.tracks if t["age"] <= self.cfg.max_age]
         T, M = len(active), len(bboxes)
 
@@ -49,6 +51,9 @@ class SimpleTracker:
                     continue
                 t = active[r]
                 t["bbox"] = bboxes[c]
+                t["class_id"] = classes[c]
+                if detector:
+                    t["class_name"] = detector.get_class_name(classes[c])
                 t["hits"] += 1
                 t["age"] = 0
                 assigned_t.add(id(t))
@@ -64,12 +69,17 @@ class SimpleTracker:
         # New tracks for unassigned detections
         for i in range(M):
             if i not in assigned_d:
-                self.tracks.append({
+                track_dict = {
                     "id": self.next_id,
                     "bbox": bboxes[i],
+                    "class_id": classes[i],
                     "hits": 1,
                     "age": 0,
-                })
+                }
+                if detector:
+                    track_dict["class_name"] = detector.get_class_name(classes[i])
+                
+                self.tracks.append(track_dict)
                 self.next_id += 1
 
         # Prune old tracks

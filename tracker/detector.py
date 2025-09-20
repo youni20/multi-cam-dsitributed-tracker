@@ -2,7 +2,6 @@ import numpy as np
 from ultralytics import YOLO
 import cv2
 import os
-import os 
 
 class YOLODetector:
     def __init__(self, weights: str = "yolov8n.pt", conf: float = 0.25,
@@ -12,6 +11,10 @@ class YOLODetector:
         self.iou = iou
         self.imgsz = imgsz
         self.classes = classes
+
+    def get_class_name(self, class_id):
+        """Get class name from class ID"""
+        return self.model.names[int(class_id)]
 
     def __call__(self, image: np.ndarray) -> np.ndarray:
         # Run inference with explicit params; Ultralytics accepts BGR numpy arrays
@@ -33,14 +36,3 @@ class YOLODetector:
         conf = res.boxes.conf.cpu().numpy().reshape(-1, 1) # type: ignore
         cls  = res.boxes.cls.cpu().numpy().reshape(-1, 1) # type: ignore
         return np.hstack([xyxy, conf, cls]).astype(np.float32)
-
-
-if __name__ == "__main__":
-    # dummy_img = np.zeros((480, 640, 3), dtype=np.uint8)
-    dummy_img = cv2.imread(os.path.join("data", "images", "car.png"))
-    dummy_img = cv2.resize(dummy_img, (640, 480)) # type: ignore
-    detector = YOLODetector("yolov8n.pt")
-
-    results = detector(dummy_img) 
-    print("Detections shape:", results.shape)
-    print("Detections array:", results)
